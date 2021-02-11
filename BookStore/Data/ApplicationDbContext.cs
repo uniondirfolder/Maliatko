@@ -13,3 +13,8 @@ namespace BookStore.Data
         public DbSet<Category> Categories { get; set; }
     }
 }
+
+
+
+//add-migration addCategoryToDatabase
+//update-database
