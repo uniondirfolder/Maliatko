@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿
 using System.ComponentModel.DataAnnotations;
 
 namespace BookStore.Models
@@ -7,6 +7,7 @@ namespace BookStore.Models
     {
         [Key]
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
        
     }
