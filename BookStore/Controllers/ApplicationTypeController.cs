@@ -8,18 +8,18 @@ using BookStore.Models;
 
 namespace BookStore.Controllers
 {
-    public class CategoryController : Controller
+    public class ApplicationTypeController : Controller
     {
         private readonly ApplicationDbContext _db;
 
-        public CategoryController(ApplicationDbContext db)
+        public ApplicationTypeController(ApplicationDbContext db)
         {
             _db = db;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Category> objList = _db.Categories;
+            IEnumerable<ApplicationType> objList = _db.ApplicationTypes;
             return View(objList);
         }
 
@@ -33,9 +33,9 @@ namespace BookStore.Controllers
         //POST - CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Category obj)
+        public IActionResult Create(ApplicationType obj)
         {
-            _db.Categories.Add(obj);
+            _db.ApplicationTypes.Add(obj);
             _db.SaveChanges();
             return RedirectToAction("Index");
         }
