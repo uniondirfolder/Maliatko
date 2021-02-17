@@ -26,12 +26,15 @@ namespace BookStore.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Product> objList = _db.Products;
+            IEnumerable<Product> objList = _db.Products.Include(l=>l.Category).Include(l=>l.ApplicationType);
 
-            foreach (var item in objList)
-            {
-                item.Category = _db.Categories.FirstOrDefault(l => l.Id == item.CategoryId);
-            }
+            //foreach (var item in objList)
+            //{
+            //    item.Category = _db.Categories.FirstOrDefault(l => l.Id == item.CategoryId);
+            //    item.ApplicationType = _db.ApplicationTypes.FirstOrDefault(l => l.Id == item.ApplicationTypeId);
+            //}
+
+
             return View(objList);
         }
 
@@ -59,6 +62,11 @@ namespace BookStore.Controllers
             {
                 Product = new Product(),
                 CategorySelectList = _db.Categories.Select(i => new SelectListItem {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                }),
+                ApplicationTypeSelectList = _db.ApplicationTypes.Select(i => new SelectListItem
+                {
                     Text = i.Name,
                     Value = i.Id.ToString()
                 })
@@ -148,6 +156,11 @@ namespace BookStore.Controllers
                 Text = i.Name,
                 Value = i.Id.ToString()
             });
+            productVM.ApplicationTypeSelectList = _db.ApplicationTypes.Select(i => new SelectListItem
+            {
+                Text = i.Name,
+                Value = i.Id.ToString()
+            });
 
             return View(productVM); 
             
@@ -161,7 +174,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            Product product = _db.Products.Include(l => l.Category).FirstOrDefault(l => l.Id == id);
+            Product product = _db.Products.Include(l => l.Category).Include(l=>l.ApplicationType).FirstOrDefault(l => l.Id == id);
             //product.Category = _db.Categories.Find(product.CategoryId);
             
             if (product == null)
