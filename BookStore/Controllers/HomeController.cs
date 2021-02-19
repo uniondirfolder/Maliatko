@@ -32,6 +32,18 @@ namespace BookStore.Controllers
             return View(homeVM);
         }
 
+        public IActionResult Details(int id)
+        {
+            DetailsVM DetailsVM = new DetailsVM()
+            {
+                Product = _db.Products.Include(l => l.Category).Include(l => l.ApplicationType)
+                .Where(l => l.Id == id).FirstOrDefault(),
+                ExistsInCart = false
+            };
+
+            return View(DetailsVM);
+        }
+
         public IActionResult Privacy()
         {
             return View();
