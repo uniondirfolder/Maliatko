@@ -35,12 +35,29 @@ namespace BookStore.Controllers
 
         public IActionResult Details(int id)
         {
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
+            if (HttpContext.Session.Get<IEnumerable<ShoppingCart>>(WC.SessionCart) != null &&
+                HttpContext.Session.Get<IEnumerable<ShoppingCart>>(WC.SessionCart).Count() > 0)
+            {
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart);
+            }
+
+
             DetailsVM DetailsVM = new DetailsVM()
             {
                 Product = _db.Products.Include(l => l.Category).Include(l => l.ApplicationType)
                 .Where(l => l.Id == id).FirstOrDefault(),
                 ExistsInCart = false
             };
+
+            foreach (var item in shoppingCartList)
+            {
+                if(item.ProductId == id) 
+                {
+                    DetailsVM.ExistsInCart = true;
+                }
+            }
+
 
             return View(DetailsVM);
         }
