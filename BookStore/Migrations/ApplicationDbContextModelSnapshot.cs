@@ -19,7 +19,7 @@ namespace BookStore.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
 
-            modelBuilder.Entity("BookStore.Models.ApplicationType", b =>
+            modelBuilder.Entity("BookStore_Models.ApplicationType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -35,7 +35,7 @@ namespace BookStore.Migrations
                     b.ToTable("ApplicationTypes");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Category", b =>
+            modelBuilder.Entity("BookStore_Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,7 +54,7 @@ namespace BookStore.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Product", b =>
+            modelBuilder.Entity("BookStore_Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,7 +298,7 @@ namespace BookStore.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("BookStore.Models.ApplicationUser", b =>
+            modelBuilder.Entity("BookStore_Models.ApplicationUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
@@ -308,15 +308,15 @@ namespace BookStore.Migrations
                     b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Product", b =>
+            modelBuilder.Entity("BookStore_Models.Product", b =>
                 {
-                    b.HasOne("BookStore.Models.ApplicationType", "ApplicationType")
+                    b.HasOne("BookStore_Models.ApplicationType", "ApplicationType")
                         .WithMany()
                         .HasForeignKey("ApplicationTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BookStore.Models.Category", "Category")
+                    b.HasOne("BookStore_Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)

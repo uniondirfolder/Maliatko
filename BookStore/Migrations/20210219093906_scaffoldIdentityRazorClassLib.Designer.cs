@@ -21,7 +21,7 @@ namespace BookStore.Migrations
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("BookStore.Models.ApplicationType", b =>
+            modelBuilder.Entity("BookStore_Models.ApplicationType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,7 +37,7 @@ namespace BookStore.Migrations
                     b.ToTable("ApplicationTypes");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Category", b =>
+            modelBuilder.Entity("BookStore_Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -56,7 +56,7 @@ namespace BookStore.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Product", b =>
+            modelBuilder.Entity("BookStore_Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -294,15 +294,15 @@ namespace BookStore.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("BookStore.Models.Product", b =>
+            modelBuilder.Entity("BookStore_Models.Product", b =>
                 {
-                    b.HasOne("BookStore.Models.ApplicationType", "ApplicationType")
+                    b.HasOne("BookStore_Models.ApplicationType", "ApplicationType")
                         .WithMany()
                         .HasForeignKey("ApplicationTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BookStore.Models.Category", "Category")
+                    b.HasOne("BookStore_Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)

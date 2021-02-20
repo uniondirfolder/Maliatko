@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace BookStore.Models
+namespace BookStore_Models
 {
     public class ApplicationType
     {

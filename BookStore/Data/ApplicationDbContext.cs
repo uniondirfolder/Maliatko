@@ -1,4 +1,4 @@
-﻿using BookStore.Models;
+﻿using BookStore_Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

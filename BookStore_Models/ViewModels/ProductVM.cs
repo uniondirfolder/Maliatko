@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 
-namespace BookStore.Models.ViewModels
+namespace BookStore_Models.ViewModels
 {
     public class ProductVM
     {
