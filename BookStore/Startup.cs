@@ -8,7 +8,7 @@ using BookStore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using BookStore.Utility;
+using BookStore_Utility;
 
 namespace BookStore
 {

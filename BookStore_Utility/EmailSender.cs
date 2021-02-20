@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace BookStore.Utility
+namespace BookStore_Utility
 {
     public class EmailSender : IEmailSender
     {

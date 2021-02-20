@@ -1,7 +1,7 @@
 ﻿using BookStore.Data;
 using BookStore.Models;
 using BookStore.Models.ViewModels;
-using BookStore.Utility;
+using BookStore_Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,7 @@
 ﻿using BookStore.Data;
 using BookStore.Models;
 using BookStore.Models.ViewModels;
-using BookStore.Utility;
+using BookStore_Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;

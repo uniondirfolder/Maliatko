@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace BookStore.Utility
+﻿
+namespace BookStore_Utility
 {
     public class MailJetSettings
     {
