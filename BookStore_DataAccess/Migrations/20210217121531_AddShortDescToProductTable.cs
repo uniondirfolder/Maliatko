@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BookStore.Migrations
+namespace BookStore_DataAccess.Migrations
 {
     public partial class AddShortDescToProductTable : Migration
     {

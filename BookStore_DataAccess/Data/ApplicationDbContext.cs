@@ -1,8 +1,9 @@
-﻿using BookStore_Models;
+﻿
+using BookStore_Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookStore.Data
+namespace BookStore_DataAccess
 {
     public class ApplicationDbContext : IdentityDbContext
     {

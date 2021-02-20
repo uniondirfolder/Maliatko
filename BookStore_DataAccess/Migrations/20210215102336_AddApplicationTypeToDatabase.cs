@@ -1,30 +1,29 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BookStore.Migrations
+namespace BookStore_DataAccess.Migrations
 {
-    public partial class addCategoryToDatabase : Migration
+    public partial class AddApplicationTypeToDatabase : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Categories",
+                name: "ApplicationTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DisplayOrder = table.Column<int>(type: "int", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.PrimaryKey("PK_ApplicationTypes", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "ApplicationTypes");
         }
     }
 }
