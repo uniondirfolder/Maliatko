@@ -9,7 +9,7 @@ namespace BookStore.Models.ViewModels
     {
         public ProductUserVM()
         {
-            ProductList = new LinkedList<Product>();
+            ProductList = new List<Product>();
         }
         public ApplicationUser ApplicationUser { get; set; }
         public IList<Product> ProductList { get; set; }
