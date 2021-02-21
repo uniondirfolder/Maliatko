@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using BookStore_Utility;
+using BookStore_DataAccess.Repository;
+using BookStore_DataAccess.Repository.IRepository;
 
 namespace BookStore
 {
@@ -40,6 +42,10 @@ namespace BookStore
                 Options.Cookie.HttpOnly = true;
                 Options.Cookie.IsEssential = true;
             });
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+
             services.AddControllersWithViews();
         }
 

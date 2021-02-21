@@ -4,22 +4,23 @@ using BookStore_DataAccess;
 using BookStore_Models;
 using Microsoft.AspNetCore.Authorization;
 using BookStore_Utility;
+using BookStore_DataAccess.Repository.IRepository;
 
 namespace BookStore.Controllers
 {
     [Authorize(Roles = WC.AdminRole)]
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public CategoryController(ApplicationDbContext db)
+        public CategoryController(ICategoryRepository categoryRepository)
         {
-            _db = db;
+            _categoryRepository = categoryRepository;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Category> objList = _db.Categories;
+            IEnumerable<Category> objList = _categoryRepository.GetAll();
             return View(objList);
         }
 
@@ -37,8 +38,8 @@ namespace BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.Categories.Add(obj);
-                _db.SaveChanges();
+                _categoryRepository.Add(obj);
+                _categoryRepository.Save();
                 return RedirectToAction("Index");
             }
             return View(obj); 
@@ -52,7 +53,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            var obj = _db.Categories.Find(id);
+            var obj = _categoryRepository.Find(id.GetValueOrDefault());
             if (obj == null) 
             {
                 return NotFound();
@@ -67,8 +68,8 @@ namespace BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.Categories.Update(obj);
-                _db.SaveChanges();
+                _categoryRepository.Update(obj);
+                _categoryRepository.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -82,7 +83,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            var obj = _db.Categories.Find(id);
+            var obj = _categoryRepository.Find(id.GetValueOrDefault());
             if (obj == null)
             {
                 return NotFound();
@@ -95,11 +96,11 @@ namespace BookStore.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int? id)
         {
-            var obj = _db.Categories.Find(id);
+            var obj = _categoryRepository.Find(id.GetValueOrDefault());
             if (obj == null) { return NotFound(); }
 
-            _db.Categories.Remove(obj);
-            _db.SaveChanges();
+            _categoryRepository.Remove(obj);
+            _categoryRepository.Save();
             return RedirectToAction("Index");
 
         }

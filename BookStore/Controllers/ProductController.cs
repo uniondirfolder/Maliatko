@@ -11,24 +11,25 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using BookStore_Utility;
+using BookStore_DataAccess.Repository.IRepository;
 
 namespace BookStore.Controllers
 {
     [Authorize(Roles = WC.AdminRole)]
     public class ProductController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IProductRepository _productRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment)
+        public ProductController(IProductRepository productRepository, IWebHostEnvironment webHostEnvironment)
         {
-            _db = db;
+            _productRepository = productRepository;
             _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Product> objList = _db.Products.Include(l=>l.Category).Include(l=>l.ApplicationType);
+            IEnumerable<Product> objList = _productRepository.GetAll(includeProperties:"Category,ApplicationType");
 
             //foreach (var item in objList)
             //{
@@ -63,15 +64,8 @@ namespace BookStore.Controllers
             ProductVM productVM = new ProductVM()
             {
                 Product = new Product(),
-                CategorySelectList = _db.Categories.Select(i => new SelectListItem {
-                    Text = i.Name,
-                    Value = i.Id.ToString()
-                }),
-                ApplicationTypeSelectList = _db.ApplicationTypes.Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = i.Id.ToString()
-                })
+                CategorySelectList = _productRepository.GetAllDropdownList(WC.CategoryName),
+                ApplicationTypeSelectList = _productRepository.GetAllDropdownList(WC.ApplicationTypeName)
 
             };
 
@@ -83,7 +77,7 @@ namespace BookStore.Controllers
             }
             else
             {
-                productVM.Product = _db.Products.Find(id);
+                productVM.Product = _productRepository.Find(id.GetValueOrDefault());
                 if(productVM.Product == null)
                 {
                     return NotFound();
@@ -119,12 +113,12 @@ namespace BookStore.Controllers
 
                     productVM.Product.Image = fileName + extension;
 
-                    _db.Products.Add(productVM.Product);
+                    _productRepository.Add(productVM.Product);
                 }
                 else 
                 {
                     //Updating
-                    var objFromDb = _db.Products.AsNoTracking().FirstOrDefault(l => l.Id == productVM.Product.Id);
+                    var objFromDb = _productRepository.FirstOrDefault(l => l.Id == productVM.Product.Id, isTracking: false);
 
                     if (files.Count > 0)
                     {
@@ -146,23 +140,15 @@ namespace BookStore.Controllers
                     {
                         productVM.Product.Image = objFromDb.Image;
                     }
-                    _db.Products.Update(productVM.Product);
+                    _productRepository.Update(productVM.Product);
                 }
 
-                _db.SaveChanges();
+                _productRepository.Save();
                 return RedirectToAction("Index");
             }
 
-            productVM.CategorySelectList = _db.Categories.Select(i => new SelectListItem
-            {
-                Text = i.Name,
-                Value = i.Id.ToString()
-            });
-            productVM.ApplicationTypeSelectList = _db.ApplicationTypes.Select(i => new SelectListItem
-            {
-                Text = i.Name,
-                Value = i.Id.ToString()
-            });
+            productVM.CategorySelectList = _productRepository.GetAllDropdownList(WC.CategoryName);
+            productVM.ApplicationTypeSelectList = _productRepository.GetAllDropdownList(WC.ApplicationTypeName);
 
             return View(productVM); 
             
@@ -176,7 +162,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            Product product = _db.Products.Include(l => l.Category).Include(l=>l.ApplicationType).FirstOrDefault(l => l.Id == id);
+            Product product = _productRepository.FirstOrDefault(l=>l.Id==id, includeProperties:"Category,ApplicationType");
             //product.Category = _db.Categories.Find(product.CategoryId);
             
             if (product == null)
@@ -191,15 +177,15 @@ namespace BookStore.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int? id)
         {
-            var obj = _db.Products.Find(id);
+            var obj = _productRepository.Find(id.GetValueOrDefault());
             if (obj == null) { return NotFound(); }
 
             string upload =_webHostEnvironment.WebRootPath + WC.ImagePath;
             var oldFile = Path.Combine(upload, obj.Image);
             if (System.IO.File.Exists(oldFile)) { System.IO.File.Delete(oldFile); }
 
-            _db.Products.Remove(obj);
-            _db.SaveChanges();
+            _productRepository.Remove(obj);
+            _productRepository.Save();
             return RedirectToAction("Index");
 
         }

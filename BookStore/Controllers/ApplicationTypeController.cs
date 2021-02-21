@@ -7,22 +7,23 @@ using BookStore_DataAccess;
 using BookStore_Models;
 using Microsoft.AspNetCore.Authorization;
 using BookStore_Utility;
+using BookStore_DataAccess.Repository.IRepository;
 
 namespace BookStore.Controllers
 {
     [Authorize(Roles = WC.AdminRole)]
     public class ApplicationTypeController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IApplicationTypeRepository _applicationTypeRepository;
 
-        public ApplicationTypeController(ApplicationDbContext db)
+        public ApplicationTypeController(IApplicationTypeRepository applicationTypeRepository)
         {
-            _db = db;
+            _applicationTypeRepository = applicationTypeRepository;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<ApplicationType> objList = _db.ApplicationTypes;
+            IEnumerable<ApplicationType> objList = _applicationTypeRepository.GetAll();
             return View(objList);
         }
 
@@ -40,8 +41,8 @@ namespace BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.ApplicationTypes.Add(obj);
-                _db.SaveChanges();
+                _applicationTypeRepository.Add(obj);
+                _applicationTypeRepository.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -55,7 +56,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            var obj = _db.ApplicationTypes.Find(id);
+            var obj = _applicationTypeRepository.Find(id.GetValueOrDefault());
             if (obj == null)
             {
                 return NotFound();
@@ -70,8 +71,8 @@ namespace BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.ApplicationTypes.Update(obj);
-                _db.SaveChanges();
+                _applicationTypeRepository.Update(obj);
+                _applicationTypeRepository.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -85,7 +86,7 @@ namespace BookStore.Controllers
             {
                 return NotFound();
             }
-            var obj = _db.ApplicationTypes.Find(id);
+            var obj = _applicationTypeRepository.Find(id.GetValueOrDefault());
             if (obj == null)
             {
                 return NotFound();
@@ -98,11 +99,11 @@ namespace BookStore.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int? id)
         {
-            var obj = _db.ApplicationTypes.Find(id);
+            var obj = _applicationTypeRepository.Find(id.GetValueOrDefault());
             if (obj == null) { return NotFound(); }
 
-            _db.ApplicationTypes.Remove(obj);
-            _db.SaveChanges();
+            _applicationTypeRepository.Remove(obj);
+            _applicationTypeRepository.Save();
             return RedirectToAction("Index");
 
         }
