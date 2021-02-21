@@ -13,7 +13,7 @@
         <input asp-for="Product.Id" hidden />
     }
 
-    <div class="border p-3">
+    <div class="border p-3 bg-white">
 
         <div class="form-group row">
             <h2 class="text-info pl-3">@title</h2>
@@ -21,7 +21,7 @@
 
         <div class="row">
             <div class="col-8">
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         <label asp-for="Product.Name"></label>
                     </div>
@@ -31,7 +31,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         <label asp-for="Product.Price"></label>
                     </div>
@@ -41,7 +41,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         <label asp-for="Product.ShortDesc"></label>
                     </div>
@@ -51,17 +51,18 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         <label asp-for="Product.Description"></label>
                     </div>
                     <div class="col-8">
-                        <textarea asp-for="Product.Description" class="form-control summernote"></textarea>
+                        @*<textarea asp-for="Product.Description" class="form-control summernote"></textarea>*@
+                        <textarea asp-for="Product.Description" class="form-control" id="summernote" name="editordata"></textarea>
                         <span asp-validation-for="Product.Description" class="text-danger"></span>
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         Image
                     </div>
@@ -70,7 +71,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-4">
                         <label asp-for="Product.CategoryId"></label>
                     </div>
@@ -81,7 +82,7 @@
                         @*<select asp-for="CategoryId" asp-items="@ViewData["CategoryDropDown"] as IEnumerable<SelectListItem>" class="form-control">
                     <option disabled selected>--Select Category--</option>
                 </select>*@
-                        <select asp-for="Product.CategoryId" asp-items="@Model.CategorySelectList" class="form-control">
+                        <select asp-for="Product.CategoryId" asp-items="@Model.CategorySelectList" class="form-select">
                             <option disabled selected>--Select Category--</option>
                         </select>
                         <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
@@ -92,14 +93,14 @@
                         <label asp-for="Product.ApplicationTypeId"></label>
                     </div>
                     <div class="col-8">
-                        <select asp-for="Product.ApplicationTypeId" asp-items="@Model.ApplicationTypeSelectList" class="form-control">
+                        <select asp-for="Product.ApplicationTypeId" asp-items="@Model.ApplicationTypeSelectList" class="form-select">
                             <option disabled selected>--Select Application Type--</option>
                         </select>
                         <span asp-validation-for="Product.ApplicationTypeId" class="text-danger"></span>
                     </div>
                 </div>
 
-                <div class="form-group row">
+                <div class="form-group row py-2">
                     <div class="col-8 offset-4 row">
 
                         <div class="col">
@@ -129,7 +130,7 @@
                 @*Keep this empty*@
                 @if (Model.Product.Id != 0)
                 {
-                    <img src="@BookStore_Utility.WC.ImagePath@Model.Product.Image" width="300" style="border-radius:5px; border:1px solid #bbb" />
+                    <img src="@BookStore_Utility.WC.ImagePath@Model.Product.Image" width="100%" style="border-radius:5px; border:1px solid #bbb" />
                 }
 
             </div>
@@ -146,7 +147,7 @@
     }
     <script>
         $(document).ready(function () {
-            $('.summernote').summernote({
+            $('#summernote').summernote({
                 height:250
             });
         });
