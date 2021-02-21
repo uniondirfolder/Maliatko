@@ -84,5 +84,10 @@ namespace BookStore_DataAccess.Repository
         {
             _db.SaveChanges();
         }
+
+        public void RemoveRange(IEnumerable<T> entity)
+        {
+            dbSet.RemoveRange(entity);
+        }
     }
 }

@@ -148,9 +148,10 @@ namespace BookStore.Controllers
                     ProductId = prod.Id
                 };
                 _detailRepo.Add(inquiryDetail);              
-            }
+            }           
             _detailRepo.Save();
 
+            TempData[WC.Success] = "Inquiry summury successfully";
             return RedirectToAction(nameof(InquiryConfirmation));
         }
         public IActionResult InquiryConfirmation() 

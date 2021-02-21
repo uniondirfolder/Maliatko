@@ -141,9 +141,9 @@ namespace BookStore.Controllers
                         productVM.Product.Image = objFromDb.Image;
                     }
                     _productRepository.Update(productVM.Product);
-                }
-
+                }              
                 _productRepository.Save();
+                TempData[WC.Success] = "Product upserted successfully";
                 return RedirectToAction("Index");
             }
 
@@ -186,6 +186,7 @@ namespace BookStore.Controllers
 
             _productRepository.Remove(obj);
             _productRepository.Save();
+            TempData[WC.Success] = "Product edited successfully";
             return RedirectToAction("Index");
 
         }

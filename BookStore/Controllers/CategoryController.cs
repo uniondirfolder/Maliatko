@@ -40,8 +40,10 @@ namespace BookStore.Controllers
             {
                 _categoryRepository.Add(obj);
                 _categoryRepository.Save();
+                TempData[WC.Success] = "Category created successfully";
                 return RedirectToAction("Index");
             }
+            TempData[WC.Error] = "Error while creating category";
             return View(obj); 
             
         }
@@ -70,8 +72,10 @@ namespace BookStore.Controllers
             {
                 _categoryRepository.Update(obj);
                 _categoryRepository.Save();
+                TempData[WC.Success] = "Category edited successfully";
                 return RedirectToAction("Index");
             }
+            TempData[WC.Error] = "Error while editing category";
             return View(obj);
 
         }
@@ -101,6 +105,7 @@ namespace BookStore.Controllers
 
             _categoryRepository.Remove(obj);
             _categoryRepository.Save();
+            TempData[WC.Success] = "Category deleted successfully";
             return RedirectToAction("Index");
 
         }

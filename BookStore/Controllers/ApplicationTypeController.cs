@@ -43,8 +43,10 @@ namespace BookStore.Controllers
             {
                 _applicationTypeRepository.Add(obj);
                 _applicationTypeRepository.Save();
+                TempData[WC.Success] = "Application type created successfully";
                 return RedirectToAction("Index");
             }
+            TempData[WC.Error] = "Error while creating application type";
             return View(obj);
 
         }
@@ -73,8 +75,10 @@ namespace BookStore.Controllers
             {
                 _applicationTypeRepository.Update(obj);
                 _applicationTypeRepository.Save();
+                TempData[WC.Success] = "Application type edited successfully";
                 return RedirectToAction("Index");
             }
+            TempData[WC.Error] = "Error while editing application type";
             return View(obj);
 
         }
@@ -104,6 +108,7 @@ namespace BookStore.Controllers
 
             _applicationTypeRepository.Remove(obj);
             _applicationTypeRepository.Save();
+            TempData[WC.Success] = "Application type deleted successfully";
             return RedirectToAction("Index");
 
         }
