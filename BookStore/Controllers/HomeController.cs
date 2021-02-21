@@ -1,4 +1,5 @@
 ﻿using BookStore_DataAccess;
+using BookStore_DataAccess.Repository.IRepository;
 using BookStore_Models;
 using BookStore_Models.ViewModels;
 using BookStore_Utility;
@@ -16,19 +17,21 @@ namespace BookStore.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _db;
+        private readonly IProductRepository _prodRepo;
+        private readonly ICategoryRepository _catgRepo;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db, IProductRepository prodRepo, ICategoryRepository catgRepo)
         {
             _logger = logger;
-            _db = db;
+            _prodRepo = prodRepo;
+            _catgRepo = catgRepo;
         }
 
         public IActionResult Index()
         {
-            HomeVM homeVM = new HomeVM() { 
-            Products=_db.Products.Include(l=>l.Category).Include(l=>l.ApplicationType),
-            Categories=_db.Categories
+            HomeVM homeVM = new HomeVM() {
+                Products = _prodRepo.GetAll(includeProperties: "Category,ApplicationType"),
+                Categories = _catgRepo.GetAll()
             };
             return View(homeVM);
         }
@@ -45,8 +48,7 @@ namespace BookStore.Controllers
 
             DetailsVM DetailsVM = new DetailsVM()
             {
-                Product = _db.Products.Include(l => l.Category).Include(l => l.ApplicationType)
-                .Where(l => l.Id == id).FirstOrDefault(),
+                Product = _prodRepo.FirstOrDefault(x=>x.Id==id,includeProperties: "Category,ApplicationType"),                
                 ExistsInCart = false
             };
 

@@ -1,4 +1,5 @@
 ﻿using BookStore_DataAccess;
+using BookStore_DataAccess.Repository.IRepository;
 using BookStore_Models;
 using BookStore_Models.ViewModels;
 using BookStore_Utility;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,17 +20,28 @@ namespace BookStore.Controllers
     [Authorize]
     public class CartController : Controller
     {
-        private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _webHostEnviroment;
         private readonly IEmailSender _emailSender;
+        private readonly IApplicationUserRepository _userRepo;
+        private readonly IProductRepository _productRepo;
+        private readonly IInquiryHeaderRepository _headerRepo;
+        private readonly IInquiryDetailRepository _detailRepo;
 
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
-        public CartController(ApplicationDbContext db, IWebHostEnvironment webHostEnviroment, IEmailSender emailSender)
+        public CartController(IWebHostEnvironment webHostEnviroment, 
+            IEmailSender emailSender,
+            IApplicationUserRepository userRepo,
+            IProductRepository productRepo,
+            IInquiryHeaderRepository headerRepo,
+            IInquiryDetailRepository detailRepo)
         {
-            _db = db;
             _webHostEnviroment = webHostEnviroment;
             _emailSender = emailSender;
+            _userRepo = userRepo;
+            _productRepo = productRepo;
+            _headerRepo = headerRepo;
+            _detailRepo = detailRepo;
         }
 
         public IActionResult Index()
@@ -42,7 +55,7 @@ namespace BookStore.Controllers
             }
 
             List<int> prodInCart = shoppingCarts.Select(l => l.ProductId).ToList();
-            IEnumerable<Product> prodList = _db.Products.Where(l => prodInCart.Contains(l.Id));
+            IEnumerable<Product> prodList = _productRepo.GetAll(l => prodInCart.Contains(l.Id));
             return View(prodList);
         }
 
@@ -69,11 +82,11 @@ namespace BookStore.Controllers
             }
 
             List<int> prodInCart = shoppingCarts.Select(l => l.ProductId).ToList();
-            IEnumerable<Product> prodList = _db.Products.Where(l => prodInCart.Contains(l.Id));
+            IEnumerable<Product> prodList = _productRepo.GetAll(l => prodInCart.Contains(l.Id));
 
             ProductUserVM = new ProductUserVM()
             {
-                ApplicationUser = _db.ApplicationUsers.FirstOrDefault(l => l.Id == claim.Value),
+                ApplicationUser = _userRepo.FirstOrDefault(l => l.Id == claim.Value),
                 ProductList = prodList.ToList()
                 
 
@@ -87,6 +100,9 @@ namespace BookStore.Controllers
         [ActionName("Summary")]
         public async Task<IActionResult> SummaryPost(ProductUserVM ProductUserVM)
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
             var PathToTemplate = _webHostEnviroment.WebRootPath + Path.DirectorySeparatorChar.ToString()
                 + "templates" + Path.DirectorySeparatorChar.ToString() +
                 "Inquiry.html";
@@ -111,6 +127,29 @@ namespace BookStore.Controllers
                 productListSB.ToString());
 
             await _emailSender.SendEmailAsync(WC.EmailAdmin, subject, messageBody);
+
+            InquiryHeader inquiryHeader = new InquiryHeader()
+            {
+                ApplicationUserId = claim.Value,
+                FullName = ProductUserVM.ApplicationUser.FullName,
+                Email = ProductUserVM.ApplicationUser.Email,
+                PhoneNumber = ProductUserVM.ApplicationUser.PhoneNumber,
+                InquiryDate = DateTime.Now
+            };
+
+            _headerRepo.Add(inquiryHeader);
+            _headerRepo.Save();
+
+            foreach (var prod in ProductUserVM.ProductList)
+            {
+                InquiryDetail inquiryDetail = new InquiryDetail() 
+                {
+                    InquiryHeaderId = inquiryHeader.Id,
+                    ProductId = prod.Id
+                };
+                _detailRepo.Add(inquiryDetail);              
+            }
+            _detailRepo.Save();
 
             return RedirectToAction(nameof(InquiryConfirmation));
         }
