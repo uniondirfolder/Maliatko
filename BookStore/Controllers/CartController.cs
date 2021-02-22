@@ -26,15 +26,19 @@ namespace BookStore.Controllers
         private readonly IProductRepository _productRepo;
         private readonly IInquiryHeaderRepository _headerRepo;
         private readonly IInquiryDetailRepository _detailRepo;
+        private readonly IOrderHeaderRepository _orderHeaderRepo;
+        private readonly IOrderDetailRepository _orderDetailRepo;
 
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
-        public CartController(IWebHostEnvironment webHostEnviroment, 
+        public CartController(IWebHostEnvironment webHostEnviroment,
             IEmailSender emailSender,
             IApplicationUserRepository userRepo,
             IProductRepository productRepo,
             IInquiryHeaderRepository headerRepo,
-            IInquiryDetailRepository detailRepo)
+            IInquiryDetailRepository detailRepo, 
+            IOrderHeaderRepository orderHeaderRepo, 
+            IOrderDetailRepository orderDetailRepo)
         {
             _webHostEnviroment = webHostEnviroment;
             _emailSender = emailSender;
@@ -42,6 +46,8 @@ namespace BookStore.Controllers
             _productRepo = productRepo;
             _headerRepo = headerRepo;
             _detailRepo = detailRepo;
+            _orderHeaderRepo = orderHeaderRepo;
+            _orderDetailRepo = orderDetailRepo;
         }
 
         public IActionResult Index()
@@ -144,58 +150,114 @@ namespace BookStore.Controllers
         [ActionName("Summary")]
         public async Task<IActionResult> SummaryPost(ProductUserVM ProductUserVM)
         {
+
+
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-            var PathToTemplate = _webHostEnviroment.WebRootPath + Path.DirectorySeparatorChar.ToString()
-                + "templates" + Path.DirectorySeparatorChar.ToString() +
-                "Inquiry.html";
-
-            var subject = "New Inquiry";
-            string HtmlBody = "";
-            using (StreamReader sr = System.IO.File.OpenText(PathToTemplate))
+            if (User.IsInRole(WC.AdminRole)) 
             {
-                HtmlBody = sr.ReadToEnd();
-            }
-
-            StringBuilder productListSB = new StringBuilder();
-            foreach (var prod in ProductUserVM.ProductList)
-            {
-                productListSB.Append($" - Name: {prod.Name} <span style='font-size:14px;'> (ID: {prod.Id})</span><br />");
-            }
-
-            string messageBody = string.Format(HtmlBody,
-                ProductUserVM.ApplicationUser.FullName,
-                ProductUserVM.ApplicationUser.Email,
-                ProductUserVM.ApplicationUser.PhoneNumber,
-                productListSB.ToString());
-
-            await _emailSender.SendEmailAsync(WC.EmailAdmin, subject, messageBody);
-
-            InquiryHeader inquiryHeader = new InquiryHeader()
-            {
-                ApplicationUserId = claim.Value,
-                FullName = ProductUserVM.ApplicationUser.FullName,
-                Email = ProductUserVM.ApplicationUser.Email,
-                PhoneNumber = ProductUserVM.ApplicationUser.PhoneNumber,
-                InquiryDate = DateTime.Now
-            };
-
-            _headerRepo.Add(inquiryHeader);
-            _headerRepo.Save();
-
-            foreach (var prod in ProductUserVM.ProductList)
-            {
-                InquiryDetail inquiryDetail = new InquiryDetail() 
+                //we need to create an order
+                #region Order
+                var orderTotal = 0.0;
+                foreach (var prod in ProductUserVM.ProductList)
                 {
-                    InquiryHeaderId = inquiryHeader.Id,
-                    ProductId = prod.Id
+                    orderTotal += prod.Price * prod.TempSqFt;
+                }
+                OrderHeader orderHeader = new OrderHeader()
+                {
+                    CreatedByUserId = claim.Value,
+                    FinalOrderTotal = orderTotal,
+                    City = ProductUserVM.ApplicationUser.City,
+                    StreetAddress = ProductUserVM.ApplicationUser.StreetAddress,
+                    State = ProductUserVM.ApplicationUser.State,
+                    PostalCode = ProductUserVM.ApplicationUser.PostalCode,
+                    FullName = ProductUserVM.ApplicationUser.FullName,
+                    Email = ProductUserVM.ApplicationUser.Email,
+                    PhoneNumber = ProductUserVM.ApplicationUser.PhoneNumber,
+                    OrderDate = DateTime.Now,
+                    OrderStatus = WC.StatusPending
                 };
-                _detailRepo.Add(inquiryDetail);              
-            }           
-            _detailRepo.Save();
+                _orderHeaderRepo.Add(orderHeader);
+                _orderHeaderRepo.Save();
+                
 
-            TempData[WC.Success] = "Inquiry summury successfully";
+                foreach (var prod in ProductUserVM.ProductList)
+                {
+                    OrderDetail orderDetail = new OrderDetail()
+                    {
+                        OrderHeaderId = orderHeader.Id,
+                        PricePerSqFt=prod.Price,
+                        Sqft = prod.TempSqFt,
+                        ProductId = prod.Id
+                    };
+                    _orderDetailRepo.Add(orderDetail);
+                }
+                _orderDetailRepo.Save();
+
+                TempData[WC.Success] = $"Order {orderHeader.Id}  saved";
+
+                return RedirectToAction(nameof(InquiryConfirmation), new { id = orderHeader.Id });
+                #endregion
+            }
+            else
+            {
+                //we need to create an inquiry
+                #region Email
+                var PathToTemplate = _webHostEnviroment.WebRootPath + Path.DirectorySeparatorChar.ToString()
+                    + "templates" + Path.DirectorySeparatorChar.ToString() +
+                    "Inquiry.html";
+
+                var subject = "New Inquiry";
+                string HtmlBody = "";
+                using (StreamReader sr = System.IO.File.OpenText(PathToTemplate))
+                {
+                    HtmlBody = sr.ReadToEnd();
+                }
+
+                StringBuilder productListSB = new StringBuilder();
+                foreach (var prod in ProductUserVM.ProductList)
+                {
+                    productListSB.Append($" - Name: {prod.Name} <span style='font-size:14px;'> (ID: {prod.Id})</span><br />");
+                }
+
+                string messageBody = string.Format(HtmlBody,
+                    ProductUserVM.ApplicationUser.FullName,
+                    ProductUserVM.ApplicationUser.Email,
+                    ProductUserVM.ApplicationUser.PhoneNumber,
+                    productListSB.ToString());
+
+                await _emailSender.SendEmailAsync(WC.EmailAdmin, subject, messageBody);
+
+                InquiryHeader inquiryHeader = new InquiryHeader()
+                {
+                    ApplicationUserId = claim.Value,
+                    FullName = ProductUserVM.ApplicationUser.FullName,
+                    Email = ProductUserVM.ApplicationUser.Email,
+                    PhoneNumber = ProductUserVM.ApplicationUser.PhoneNumber,
+                    InquiryDate = DateTime.Now
+                };
+
+                _headerRepo.Add(inquiryHeader);
+                _headerRepo.Save();
+
+                foreach (var prod in ProductUserVM.ProductList)
+                {
+                    InquiryDetail inquiryDetail = new InquiryDetail()
+                    {
+                        InquiryHeaderId = inquiryHeader.Id,
+                        ProductId = prod.Id
+                    };
+                    _detailRepo.Add(inquiryDetail);
+                }
+                _detailRepo.Save();
+
+                TempData[WC.Success] = "Inquiry summury successfully";
+                #endregion
+            }
+
+
+
             return RedirectToAction(nameof(InquiryConfirmation));
         }
         public IActionResult InquiryConfirmation() 
