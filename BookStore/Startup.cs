@@ -58,7 +58,13 @@ namespace BookStore
             
             services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 
+            services.AddAuthentication().AddFacebook(Options => {
+                Options.AppId = "9999999999999999999";
+                Options.AppSecret = "058548sdds545s5ds5";
+            });
+            
             services.AddControllersWithViews();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
