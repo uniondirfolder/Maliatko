@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using BookStore_Utility;
 using BookStore_DataAccess.Repository;
 using BookStore_DataAccess.Repository.IRepository;
+using BookStore_Utility.BrainTree;
 
 namespace BookStore
 {
@@ -42,14 +43,19 @@ namespace BookStore
                 Options.Cookie.HttpOnly = true;
                 Options.Cookie.IsEssential = true;
             });
+            services.Configure<BrainTreeSettings>(Configuration.GetSection("BrainTree"));
+            services.AddSingleton<IBrainTreeGate, BrainTreeGate>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            
             services.AddScoped<IInquiryDetailRepository, InquiryDetailRepository>();
             services.AddScoped<IInquiryHeaderRepository, InquiryHeaderRepository>();
+            
             services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
             services.AddScoped<IOrderHeaderRepository, OrderHeaderRepository>();
+            
             services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 
             services.AddControllersWithViews();

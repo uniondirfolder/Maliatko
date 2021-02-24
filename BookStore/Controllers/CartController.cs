@@ -3,8 +3,11 @@ using BookStore_DataAccess.Repository.IRepository;
 using BookStore_Models;
 using BookStore_Models.ViewModels;
 using BookStore_Utility;
+using BookStore_Utility.BrainTree;
+using Braintree;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -28,6 +31,7 @@ namespace BookStore.Controllers
         private readonly IInquiryDetailRepository _detailRepo;
         private readonly IOrderHeaderRepository _orderHeaderRepo;
         private readonly IOrderDetailRepository _orderDetailRepo;
+        private readonly IBrainTreeGate _brain;
 
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
@@ -36,9 +40,10 @@ namespace BookStore.Controllers
             IApplicationUserRepository userRepo,
             IProductRepository productRepo,
             IInquiryHeaderRepository headerRepo,
-            IInquiryDetailRepository detailRepo, 
-            IOrderHeaderRepository orderHeaderRepo, 
-            IOrderDetailRepository orderDetailRepo)
+            IInquiryDetailRepository detailRepo,
+            IOrderHeaderRepository orderHeaderRepo,
+            IOrderDetailRepository orderDetailRepo, 
+            IBrainTreeGate brain)
         {
             _webHostEnviroment = webHostEnviroment;
             _emailSender = emailSender;
@@ -48,6 +53,7 @@ namespace BookStore.Controllers
             _detailRepo = detailRepo;
             _orderHeaderRepo = orderHeaderRepo;
             _orderDetailRepo = orderDetailRepo;
+            _brain = brain;
         }
 
         public IActionResult Index()
@@ -88,6 +94,7 @@ namespace BookStore.Controllers
 
             return RedirectToAction(nameof(Summary));
         }
+
         public IActionResult Summary() 
         {
             ApplicationUser applicationUser;
@@ -109,6 +116,10 @@ namespace BookStore.Controllers
                 {
                     applicationUser = new ApplicationUser();
                 }
+
+                var gateway = _brain.GetGateway();
+                var clientToken = gateway.ClientToken.Generate();
+                ViewBag.ClientToken = clientToken;
             }
             else
             {
@@ -148,9 +159,9 @@ namespace BookStore.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Summary")]
-        public async Task<IActionResult> SummaryPost(ProductUserVM ProductUserVM)
+        public async Task<IActionResult> SummaryPost(IFormCollection collection, ProductUserVM ProductUserVM)
         {
-
+            
 
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
@@ -159,15 +170,15 @@ namespace BookStore.Controllers
             {
                 //we need to create an order
                 #region Order
-                var orderTotal = 0.0;
-                foreach (var prod in ProductUserVM.ProductList)
-                {
-                    orderTotal += prod.Price * prod.TempSqFt;
-                }
+                //var orderTotal = 0.0;
+                //foreach (var prod in ProductUserVM.ProductList)
+                //{
+                //    orderTotal += prod.Price * prod.TempSqFt;
+                //}
                 OrderHeader orderHeader = new OrderHeader()
                 {
                     CreatedByUserId = claim.Value,
-                    FinalOrderTotal = orderTotal,
+                    FinalOrderTotal = ProductUserVM.ProductList.Sum(x=>x.TempSqFt*x.Price),
                     City = ProductUserVM.ApplicationUser.City,
                     StreetAddress = ProductUserVM.ApplicationUser.StreetAddress,
                     State = ProductUserVM.ApplicationUser.State,
@@ -193,9 +204,35 @@ namespace BookStore.Controllers
                     };
                     _orderDetailRepo.Add(orderDetail);
                 }
-                _orderDetailRepo.Save();
+                _orderDetailRepo.Save();              
 
-                TempData[WC.Success] = $"Order {orderHeader.Id}  saved";
+                string nonceFromTheClient = collection["payment_method_nonce"];
+                var request = new TransactionRequest
+                {
+                    Amount = Convert.ToDecimal(orderHeader.FinalOrderTotal),
+                    PaymentMethodNonce = nonceFromTheClient,
+                    //DeviceData = deviceDataFromTheClient,
+                    OrderId=orderHeader.Id.ToString(),
+                    Options = new TransactionOptionsRequest
+                    {
+                        SubmitForSettlement = true
+                    }
+                };
+
+                var gateway = _brain.GetGateway();
+                Result<Transaction> result = gateway.Transaction.Sale(request);
+
+                if (result.Target.ProcessorResponseText == "Approved") 
+                {
+                    orderHeader.TransactionId = result.Target.Id;
+                    orderHeader.OrderStatus = WC.StatusApproved;
+                }
+                else
+                {
+                    orderHeader.OrderStatus = WC.StatusCancelled;
+                }
+                _orderHeaderRepo.Save();
+                TempData[WC.Success] = $"Order {orderHeader.Id} information saved";
 
                 return RedirectToAction(nameof(InquiryConfirmation), new { id = orderHeader.Id });
                 #endregion
@@ -260,10 +297,11 @@ namespace BookStore.Controllers
 
             return RedirectToAction(nameof(InquiryConfirmation));
         }
-        public IActionResult InquiryConfirmation() 
+        public IActionResult InquiryConfirmation(int id=0) 
         {
+            OrderHeader orderHeader = _orderHeaderRepo.FirstOrDefault(x => x.Id == id);
             HttpContext.Session.Clear();
-            return View();
+            return View(orderHeader);
         }
 
         public IActionResult Remove(int id)
