@@ -2,8 +2,8 @@
 @model LoginModel
 
 <div id="logreg-forms">
-    //🎈
-    @if ((Model.ExternalLogins?.Count ?? 0) == 0)
+    <h1 class="h3 mb-3 font-weight-normal text-info pt-4" style="text-align:center;">Sign In</h1>
+    @if ((Model.ExternalLogins?.Count ?? 0) == 0)//🎈
     {
         <div>
             <p>
@@ -16,16 +16,15 @@
     {
         <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
             <div>
-                <p>
+                
                     @foreach (var provider in Model.ExternalLogins)
                     {
                         if (provider.Name.ToLower().Contains("facebook"))
                         {
-                            <button type="submit" class="btn btn-block facebook-btn form-control"
+                            <button type="submit" class="btn btn-primary facebook-btn form-control"
                                     name="provider" value="@provider.Name"
                                     title="Log in using your @provider.DisplayName account">
-                                <i class="fab fa-facebook-square"></i>
-                                @provider.DisplayName
+                                <i class="fab fa-facebook-square"></i>@provider.DisplayName
                             </button>
                         }
                         else
@@ -34,7 +33,7 @@
                         }
 
                     }
-                </p>
+                
             </div>
         </form>
     }
