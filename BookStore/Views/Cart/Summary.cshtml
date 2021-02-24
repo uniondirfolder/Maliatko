@@ -175,12 +175,14 @@
     <script>
         //1.26.0
         var client_token = "@ViewBag.ClientToken";
-        var form = document.querySelector('#payment-form');
-        braintree.dropin.create({
+        
+        if (client_token != "") {
+            var form = document.querySelector('#payment-form');
+            braintree.dropin.create({
 
-            authorization: client_token,
-            container: '#dropin-container'
-        }, function(createErr, instance){
+                authorization: client_token,
+                container: '#dropin-container'
+            }, function (createErr, instance) {
                 form.addEventListener('submit', function () {
                     event.preventDefault();
 
@@ -192,7 +194,7 @@
                         form.submit();
                     });
                 });
-        });
-
+            });
+        }
     </script>
 }
