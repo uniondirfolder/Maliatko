@@ -332,5 +332,11 @@ namespace BookStore.Controllers
             HttpContext.Session.Set(WC.SessionCart, shoppingCarts);
             return RedirectToAction(nameof(Index));
         }
+
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index","Home");
+        }
     }
 }
